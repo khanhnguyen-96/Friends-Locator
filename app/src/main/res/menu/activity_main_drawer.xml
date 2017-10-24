@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/friends_locator" />
+        <item
+            android:id="@+id/nav_chat_room"
+            android:icon="@drawable/ic_people_outline_black_24dp"
+            android:title="@string/chat_room" />
+        <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_my_location_black_24dp"
+            android:title="@string/member_location_map" />
+    </group>
+</menu>
