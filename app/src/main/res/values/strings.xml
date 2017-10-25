@@ -14,4 +14,5 @@
     <string name="friends_locator">Friends Locator</string>
     <string name="announcement">You must create a nickname to use the app</string>
     <string name="anonymous">Anonymous</string>
+    <string name="home">Home</string>
 </resources>
