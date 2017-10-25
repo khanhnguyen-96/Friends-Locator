@@ -27,8 +27,9 @@ public class MQTTHelper {
     public static final String CLIENT_ID = "CLIENT_ID";
     public static final String DEFAULT_CLIENT_ID = "Anonymous";
     private final String CHAT_MAIN_TOPIC = "chatroom/#";
-    private final String CHAT_SUB_TOPIC = "chatroom/chat";
-    private final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
+    private static final String CHAT_SUB_TOPIC = "chatroom/chat";
+    private static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
+    public static String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
 
     public static final String username = "phusiriw";
     public static final String password = "mhqBVcp18dsf";
@@ -83,7 +84,7 @@ public class MQTTHelper {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                    subscribeToTopic();
+                    subscribeToTopics();
                 }
 
                 @Override
@@ -98,13 +99,12 @@ public class MQTTHelper {
         }
     }
 
-
-    private void subscribeToTopic() {
+    private void subcribeATopic(final String topic) {
         try {
-            mqttAndroidClient.subscribe(CHAT_SUB_TOPIC, 0, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.w("Mqtt", "Subscribed!");
+                    Log.w("Mqtt", "Subscribed!" + topic);
                 }
 
                 @Override
@@ -117,6 +117,11 @@ public class MQTTHelper {
             System.err.println("Exception whilst subscribing");
             ex.printStackTrace();
         }
+    }
+
+    private void subscribeToTopics() {
+        subcribeATopic(CHAT_SUB_TOPIC);
+        subcribeATopic(SHARED_LOCATION_SUB_TOPIC);
     }
 
     public void sendMessageToServer(String nickname, String message) {

@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.activities.MainActivity;
+import com.nnkti.friendlocator.helpers.FloatingActionButtonHelper;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
 
@@ -34,12 +35,13 @@ import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
  * Created by nnkti on 10/20/2017.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack {
     MQTTHelper mqttHelper;
     MapView map;
     GoogleMap currentMap;
     Location lastKnownLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
+    FloatingActionButtonHelper floatingActionButtonHelper;
     public static String LAST_LONGITUDE = "LAST_LONGITUDE";
     public static String LAST_LATITUDE = "LAST_LATITUDE";
 
@@ -50,7 +52,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private float getAverageZoomLevel() {
-        return (currentMap.getMaxZoomLevel() + currentMap.getMinZoomLevel()) / 2;
+        return (currentMap.getMaxZoomLevel()*3 + currentMap.getMinZoomLevel()) / 4;
     }
 
     public void getDeviceLocation() {
@@ -137,6 +139,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             requestLocationPermission();
         }
         map.getMapAsync(this);
+//        Get Fab helper for Floating action button manipulations
+        floatingActionButtonHelper = new FloatingActionButtonHelper(((MainActivity)getActivity()).fab);
+        floatingActionButtonHelper.setFabOnClickListener(this);
         return v;
     }
 
@@ -170,5 +175,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private void requestLocationPermission() {
         ((MainActivity) getActivity()).getLocationPermission();
+    }
+
+    @Override
+    public void fabClicked() {
+        getDeviceLocation();
     }
 }

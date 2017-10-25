@@ -4,6 +4,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +26,7 @@ import com.nnkti.friendlocator.fragments.MapFragment;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
 import com.nnkti.friendlocator.models.AsyncTaskParams;
+import com.nnkti.friendlocator.models.SimpleLocation;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
@@ -33,6 +35,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MqttCallbackExtended {
     MQTTHelper mqttHelper;
+    public FloatingActionButton fab;
     Toolbar toolbar;
     DrawerLayout drawer;
     NavigationView navigationView;
@@ -49,7 +52,6 @@ public class MainActivity extends AppCompatActivity
         toolbar.setTitle("Home");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, HomeFragment.createNewInstance(mqttHelper), "home").commit();
-
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -58,6 +60,8 @@ public class MainActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
+        fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        fab.hide();
         checkNewUser();
     }
 
@@ -109,15 +113,18 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 if (id == R.id.nav_home) {
-                    toolbar.setTitle("Friends Locator Home");
+                    toolbar.setTitle("Home");
+                    fab.hide();
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.container, HomeFragment.createNewInstance(mqttHelper), "home").commit();
                 } else if (id == R.id.nav_chat_room) {
                     toolbar.setTitle("Chat Room");
+                    fab.hide();
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.container, ChatRoomFragment.createNewInstance(mqttHelper), "chat_room").commit();
                 } else if (id == R.id.nav_map) {
                     toolbar.setTitle("Friends Locator");
+                    fab.show();
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.container, MapFragment.createNewInstance(mqttHelper), "map").commit();
                 }
@@ -174,16 +181,15 @@ public class MainActivity extends AppCompatActivity
 //                receivedMessages += mqttMessage.toString() + "\n";
 //                dataReceived.setText(receivedMessages);
 //                TODO
+        if (topic.equals(MQTTHelper.SHARED_LOCATION_SUB_TOPIC)) {
+//            SimpleLocation.parseMessageToSimpleLocation(message.toString());
+        }
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
 
     }
-
-//    public void assignMapOnReady(GoogleMap newlyCreatedMap) {
-//        this.currentMap = newlyCreatedMap;
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

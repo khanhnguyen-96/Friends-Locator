@@ -30,7 +30,7 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
         param = params[0];
         while (true) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(10000);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }

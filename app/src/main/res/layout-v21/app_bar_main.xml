@@ -35,6 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="#ffffff"
+
         app:borderWidth="0dp"
         app:layout_anchor="@+id/container"
         app:layout_anchorGravity="bottom|right" />
