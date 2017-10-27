@@ -1,14 +1,9 @@
 package com.nnkti.friendlocator.fragments;
 
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,28 +15,35 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.nnkti.friendlocator.Listener.OnLocationsUpdateListener;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.activities.MainActivity;
 import com.nnkti.friendlocator.helpers.FloatingActionButtonHelper;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
+import com.nnkti.friendlocator.models.SimpleLocation;
+
+import java.util.ArrayList;
 
 /**
  * Created by nnkti on 10/20/2017.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack {
+public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnLocationsUpdateListener {
     MQTTHelper mqttHelper;
     MapView map;
     GoogleMap currentMap;
     Location lastKnownLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     FloatingActionButtonHelper floatingActionButtonHelper;
+    private ArrayList<SimpleLocation> sharedLocations;
+    private ArrayList<Marker> markers;
+    Marker thisUser;
     public static String LAST_LONGITUDE = "LAST_LONGITUDE";
     public static String LAST_LATITUDE = "LAST_LATITUDE";
 
@@ -52,7 +54,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
     }
 
     private float getAverageZoomLevel() {
-        return (currentMap.getMaxZoomLevel()*3 + currentMap.getMinZoomLevel()) / 4;
+        return (currentMap.getMaxZoomLevel() * 3 + currentMap.getMinZoomLevel()) / 4;
     }
 
     public void getDeviceLocation() {
@@ -94,8 +96,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
 
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LATITUDE, lastKnownLocationLatLng.latitude);
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, lastKnownLocationLatLng.longitude);
-                                currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
-                                        .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID)));
+                                thisUser = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
+                                        .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID) + " - ME"));
                                 currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         lastKnownLocationLatLng,
                                         getAverageZoomLevel()
@@ -118,13 +120,49 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
         }
     }
 
+    private void updateMarkersOfSharedLocations() {
+        if (!sharedLocations.isEmpty()) {
+            for (SimpleLocation curr : sharedLocations
+                    ) {
+                if (!curr.getNickname().equals(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID))) {
+                    int pos = getMarkerBySimpleLocation(curr);
+                    if (pos == -1) { // case: new user
+
+                        LatLng currentOne = new LatLng(curr.getLatitude(), curr.getLongitude());
+                        MarkerOptions a = new MarkerOptions().position(currentOne);
+                        a.title(curr.getNickname()); //Set nickname for marker
+                        Marker m = currentMap.addMarker(a);
+                        markers.add(m);
+                    } else {
+                        markers.get(pos).setPosition(new LatLng(curr.getLatitude(),curr.getLongitude()));
+                    }
+                }
+            }
+        }
+    }
+
+    private int getMarkerBySimpleLocation(SimpleLocation curr) {
+        for (Marker m : markers
+                ) {
+            if (m.getTitle().equals(curr.getNickname())) {
+                return markers.indexOf(m);
+            }
+        }
+        return -1;
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         // Add a marker in Sydney, Australia,
         // and move the map's camera to the same location.
         currentMap = googleMap;
-//        ((MainActivity) getActivity()).getDeviceLocation();
+        getLocationsFromMainActivity();
         getDeviceLocation();
+        markers = new ArrayList<>();
+        if (sharedLocations != null)
+            if (!sharedLocations.isEmpty()) {
+                updateMarkersOfSharedLocations();
+            }
     }
 
     @Override
@@ -140,7 +178,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
         }
         map.getMapAsync(this);
 //        Get Fab helper for Floating action button manipulations
-        floatingActionButtonHelper = new FloatingActionButtonHelper(((MainActivity)getActivity()).fab);
+        floatingActionButtonHelper = new FloatingActionButtonHelper(((MainActivity) getActivity()).fab);
         floatingActionButtonHelper.setFabOnClickListener(this);
         return v;
     }
@@ -180,5 +218,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
     @Override
     public void fabClicked() {
         getDeviceLocation();
+    }
+
+    @Override
+    public void notifyLocationsChanges() {
+        getLocationsFromMainActivity();
+        updateMarkersOfSharedLocations();
+    }
+
+    private void getLocationsFromMainActivity() {
+        sharedLocations = ((MainActivity) getActivity()).sharedLocations;
     }
 }

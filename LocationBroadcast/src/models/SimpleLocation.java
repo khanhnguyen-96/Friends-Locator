@@ -1,12 +1,11 @@
-package com.nnkti.friendlocator.models;
+package models;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Created by nnkti on 10/24/2017.
+ * Created by nnkti on 10/27/2017.
  */
-
 public class SimpleLocation {
     private double latitude;
     private double longitude;
@@ -42,22 +41,7 @@ public class SimpleLocation {
         this.nickname = nickname;
     }
 
-    public static ArrayList<SimpleLocation> parseMessageToSimpleLocation(String message) {
-        if (!message.isEmpty()) {
-            ArrayList<SimpleLocation> simpleLocations = new ArrayList<>();
-            Scanner scanner = new Scanner(message);
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                // process the line
-                simpleLocations.add(getSimpleLocationFromLine(line));
-            }
-            scanner.close();
-            return simpleLocations;
-        }
-        return null;
-    }
-
-    private static SimpleLocation getSimpleLocationFromLine(String line) {
+    public static SimpleLocation getSimpleLocationFromLine(String line) {
         SimpleLocation thisLocation = new SimpleLocation(0, 0, "");
         thisLocation.setLongitude(
                 Double.parseDouble(

@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.nnkti.friendlocator.Listener.OnLocationsUpdateListener;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.asynctask.SendLocationAsyncTask;
 import com.nnkti.friendlocator.fragments.ChatRoomFragment;
@@ -32,6 +33,8 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, MqttCallbackExtended {
     MQTTHelper mqttHelper;
@@ -40,8 +43,10 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     NavigationView navigationView;
     public FusedLocationProviderClient fusedLocationProviderClient;
+    public ArrayList<SimpleLocation> sharedLocations;
     public boolean mLocationPermissionGranted;
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    OnLocationsUpdateListener onLocationsUpdateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,11 +183,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         Log.w("Received:", "Topic:" + topic + "Message:" + message.toString());
-//                receivedMessages += mqttMessage.toString() + "\n";
-//                dataReceived.setText(receivedMessages);
-//                TODO
         if (topic.equals(MQTTHelper.SHARED_LOCATION_SUB_TOPIC)) {
-//            SimpleLocation.parseMessageToSimpleLocation(message.toString());
+            sharedLocations = SimpleLocation.parseMessageToSimpleLocation(message.toString());
+            onLocationsUpdateListener.notifyLocationsChanges();
         }
     }
 
@@ -198,7 +201,7 @@ public class MainActivity extends AppCompatActivity
         mLocationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
+                // If request is cancelled, the result array will be empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
