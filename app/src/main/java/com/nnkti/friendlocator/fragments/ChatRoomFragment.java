@@ -88,14 +88,15 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        Log.d("ChR Fragment", "messageArrived: " + message.toString());
-        if (receivedMessages.isEmpty()) {
-            receivedMessages = (message.toString() + "\n\n");
-        } else {
-            receivedMessages += message.toString() + "\n\n";
+        if (topic.equals(MQTTHelper.CHAT_SUB_TOPIC)) {
+            if (receivedMessages.isEmpty()) {
+                receivedMessages = (message.toString() + "\n\n");
+            } else {
+                receivedMessages += message.toString() + "\n\n";
+            }
+            tvReceivedMessages.setText(receivedMessages);
+            scrollView.smoothScrollTo(0, tvReceivedMessages.getHeight());
         }
-        tvReceivedMessages.setText(receivedMessages);
-        scrollView.smoothScrollTo(0, tvReceivedMessages.getHeight());
     }
 
     @Override

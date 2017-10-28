@@ -20,19 +20,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 
 public class MQTTHelper {
-    public MqttAndroidClient mqttAndroidClient;
+    private MqttAndroidClient mqttAndroidClient;
 
-    public static final String serverUri = "tcp://m10.cloudmqtt.com:11778";
+    private static final String serverUri = "tcp://m10.cloudmqtt.com:11778";
 
     public static final String CLIENT_ID = "CLIENT_ID";
     public static final String DEFAULT_CLIENT_ID = "Anonymous";
     private final String CHAT_MAIN_TOPIC = "chatroom/#";
-    private static final String CHAT_SUB_TOPIC = "chatroom/chat";
+    public static final String CHAT_SUB_TOPIC = "chatroom/chat";
     private static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
     public static String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
 
-    public static final String username = "phusiriw";
-    public static final String password = "mhqBVcp18dsf";
+    private static final String username = "phusiriw";
+    private static final String password = "mhqBVcp18dsf";
 
     public MQTTHelper(Context context, String nickname) {
 
