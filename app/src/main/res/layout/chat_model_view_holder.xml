@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_chat_view_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="0dp"
+    android:layout_marginEnd="@dimen/fab_margin"
+    android:layout_marginLeft="@dimen/fab_margin"
+    android:layout_marginStart="@dimen/fab_margin"
+    android:layout_marginTop="@dimen/fab_margin"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/tv_chat_nickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="100dp"
+        android:textStyle="bold" />
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardview"
+        android:minWidth="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        app:cardCornerRadius="@dimen/fab_margin"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/tv_chat_message"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textStyle="italic"
+            android:padding="8dp"
+            android:textColor="#ffffff"/>
+    </android.support.v7.widget.CardView>
+</LinearLayout>

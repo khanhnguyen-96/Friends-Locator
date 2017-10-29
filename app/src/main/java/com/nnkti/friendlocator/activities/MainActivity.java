@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<SimpleLocation> sharedLocations;
     public boolean mLocationPermissionGranted;
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    OnLocationsUpdateListener onLocationsUpdateListener;
+    public OnLocationsUpdateListener onLocationsUpdateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity
         fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.hide();
         checkNewUser();
+
+//        Set up locations update listener
+        onLocationsUpdateListener = new OnLocationsUpdateListener();
     }
 
 
@@ -185,7 +188,7 @@ public class MainActivity extends AppCompatActivity
         Log.w("Received:", "Topic:" + topic + "Message:" + message.toString());
         if (topic.equals(MQTTHelper.SHARED_LOCATION_SUB_TOPIC)) {
             sharedLocations = SimpleLocation.parseMessageToSimpleLocation(message.toString());
-            onLocationsUpdateListener.notifyLocationsChanges();
+            onLocationsUpdateListener.listener.notifyLocationsChanges();
         }
     }
 

@@ -34,13 +34,14 @@ import java.util.ArrayList;
  * Created by nnkti on 10/20/2017.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnLocationsUpdateListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnLocationsUpdateListener.Listener {
     MQTTHelper mqttHelper;
     MapView map;
     GoogleMap currentMap;
     Location lastKnownLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     FloatingActionButtonHelper floatingActionButtonHelper;
+    OnLocationsUpdateListener onLocationsUpdateListener;
     private ArrayList<SimpleLocation> sharedLocations;
     private ArrayList<Marker> markers;
     Marker thisUser;
@@ -180,6 +181,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
 //        Get Fab helper for Floating action button manipulations
         floatingActionButtonHelper = new FloatingActionButtonHelper(((MainActivity) getActivity()).fab);
         floatingActionButtonHelper.setFabOnClickListener(this);
+        onLocationsUpdateListener = ((MainActivity)getActivity()).onLocationsUpdateListener;
+        onLocationsUpdateListener.setListener(this);
         return v;
     }
 

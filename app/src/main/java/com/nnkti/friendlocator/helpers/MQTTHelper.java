@@ -125,15 +125,17 @@ public class MQTTHelper {
     }
 
     public void sendMessageToServer(String nickname, String message) {
-        try {
-            MqttMessage messageToBeSent = new MqttMessage();
-            String payload = nickname + ":   " + message;
-            messageToBeSent.setPayload(payload.getBytes());
-            mqttAndroidClient.publish(CHAT_SUB_TOPIC, messageToBeSent);
-        } catch (MqttException e) {
-            System.err.println("Error Publishing: " + e.getMessage());
-            e.printStackTrace();
-        }
+        if (!message.isEmpty())
+            try {
+                MqttMessage messageToBeSent = new MqttMessage();
+                String payload = nickname + ":" + message;
+                payload = payload.replaceAll("\\s+", " ");
+                messageToBeSent.setPayload(payload.getBytes());
+                mqttAndroidClient.publish(CHAT_SUB_TOPIC, messageToBeSent);
+            } catch (MqttException e) {
+                System.err.println("Error Publishing: " + e.getMessage());
+                e.printStackTrace();
+            }
     }
 
     public void sendLocationToServer(SimpleLocation simpleLocation) {
