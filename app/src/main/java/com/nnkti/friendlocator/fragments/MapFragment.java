@@ -134,11 +134,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                         a.title(curr.getNickname()); //Set nickname for marker
                         Marker m = currentMap.addMarker(a);
                         markers.add(m);
+                        Toast.makeText(getContext(),"Moving camera to a new user location", Toast.LENGTH_SHORT).show();
+                        currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(),getAverageZoomLevel()));
                     } else {
                         markers.get(pos).setPosition(new LatLng(curr.getLatitude(),curr.getLongitude()));
                     }
                 }
             }
+
         }
     }
 
