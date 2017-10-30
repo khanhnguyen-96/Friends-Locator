@@ -34,7 +34,7 @@ import java.util.ArrayList;
  * Created by nnkti on 10/20/2017.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnDataUpdate.Listener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnDataUpdate.Listener, OnDataUpdate.MenuListener {
     MQTTHelper mqttHelper;
     MapView map;
     GoogleMap currentMap;
@@ -83,8 +83,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                                     Toast.makeText(getContext(), "Can't retrieve last known location", Toast.LENGTH_SHORT).show();
                                 } else {
                                     myMarker = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
-                                            .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID) + " - Last known"));
-                                    currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                            .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID)));
+                                    currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                                             myMarker.getPosition(),
                                             getAverageZoomLevel()
                                     ));
@@ -98,8 +98,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LATITUDE, lastKnownLocationLatLng.latitude);
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, lastKnownLocationLatLng.longitude);
                                 myMarker = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
-                                        .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID) + " - ME"));
-                                currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID)));
+                                currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                                         myMarker.getPosition(),
                                         getAverageZoomLevel()
                                 ));
@@ -131,7 +131,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                         Marker m = currentMap.addMarker(a);
                         markers.add(m);
                         Toast.makeText(getContext(), "Moving camera to a new user location", Toast.LENGTH_SHORT).show();
-                        currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), getAverageZoomLevel()));
+                        currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), getAverageZoomLevel()));
                     } else {
                         markers.get(pos).setPosition(new LatLng(curr.getLatitude(), curr.getLongitude()));
                     }
@@ -150,6 +150,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
             }
 
         }
+    }
+
+    private void moveCameraTo(SimpleLocation simpleLocation) {
+        for (Marker m : markers
+                ) {
+            if (m.getTitle().equals(simpleLocation.getNickname())) {
+                currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), getAverageZoomLevel()));
+                return;
+            }
+        }
+        currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myMarker.getPosition(), getAverageZoomLevel()));
     }
 
     private int getMarkerBySimpleLocation(SimpleLocation curr) {
@@ -191,6 +202,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
         floatingActionButtonHelper.setFabOnClickListener(this);
         onDataUpdate = ((MainActivity) getActivity()).onDataUpdate;
         onDataUpdate.setListener(this);
+        onDataUpdate.setGetClickedMarker(this);
         return v;
     }
 
@@ -239,7 +251,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
         }
     }
 
+    @Override
+    public void browseUserMenuClicked() {
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, SelectUserFragment.createNewInstance(sharedLocations), "home").addToBackStack("add").commit();
+    }
+
     private void getLocationsFromMainActivity() {
         sharedLocations = ((MainActivity) getActivity()).sharedLocations;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void getClickedMarker(int pos) {
+        moveCameraTo(sharedLocations.get(pos));
     }
 }
