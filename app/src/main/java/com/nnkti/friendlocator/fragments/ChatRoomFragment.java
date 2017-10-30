@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,9 +66,9 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_chat_room, container, false);
-        onDataUpdate = ((MainActivity)getActivity()).onDataUpdate;
+        onDataUpdate = ((MainActivity) getActivity()).onDataUpdate;
         onDataUpdate.setListener(this);
-        chatData = ((MainActivity)getActivity()).chatData;
+        chatData = ((MainActivity) getActivity()).chatData;
 
         rvChatData = (RecyclerView) view.findViewById(R.id.rv_chat_data);
         layoutManager = new LinearLayoutManager(this.getContext());
@@ -97,9 +98,26 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void notifyDataChanged(String type) {
         if (type.equals(MQTTHelper.CHAT_SUB_TOPIC)) {
-            chatData = ((MainActivity)getActivity()).chatData;
+            chatData = ((MainActivity) getActivity()).chatData;
             chatRecyclerViewAdapter.notifyDataSetChanged();
             layoutManager.smoothScrollToPosition(rvChatData, null, chatData.size() - 1);
         }
+    }
+
+    @Override
+    public void browseUserMenuClicked() {
+
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.item_location_list).setVisible(false);
+        super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 }
