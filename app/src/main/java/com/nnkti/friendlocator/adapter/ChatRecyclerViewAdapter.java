@@ -45,6 +45,8 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerVi
         holder.message.setText(chatModel.getMessage());
         if (!chatModel.getNickname().equals(thisUser)){
             holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.cardview_dark_background));
+        } else {
+            holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
         }
     }
 

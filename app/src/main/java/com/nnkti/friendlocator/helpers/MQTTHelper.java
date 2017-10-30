@@ -25,11 +25,9 @@ public class MQTTHelper {
     private static final String serverUri = "tcp://m10.cloudmqtt.com:11778";
 
     public static final String CLIENT_ID = "CLIENT_ID";
-    public static final String DEFAULT_CLIENT_ID = "Anonymous";
-    private final String CHAT_MAIN_TOPIC = "chatroom/#";
     public static final String CHAT_SUB_TOPIC = "chatroom/chat";
     private static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
-    public static String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
+    public static final String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
 
     private static final String username = "phusiriw";
     private static final String password = "mhqBVcp18dsf";

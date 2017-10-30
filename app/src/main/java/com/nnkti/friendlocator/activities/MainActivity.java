@@ -18,7 +18,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.nnkti.friendlocator.Listener.OnLocationsUpdateListener;
+import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.asynctask.SendLocationAsyncTask;
 import com.nnkti.friendlocator.fragments.ChatRoomFragment;
@@ -27,6 +27,7 @@ import com.nnkti.friendlocator.fragments.MapFragment;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
 import com.nnkti.friendlocator.models.AsyncTaskParams;
+import com.nnkti.friendlocator.models.ChatModel;
 import com.nnkti.friendlocator.models.SimpleLocation;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -46,31 +47,38 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<SimpleLocation> sharedLocations;
     public boolean mLocationPermissionGranted;
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    public OnLocationsUpdateListener onLocationsUpdateListener;
+    public OnDataUpdate onDataUpdate;
+    public ArrayList<ChatModel> chatData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        Set up toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-
         toolbar.setTitle("Home");
+//        replace home fragment
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, HomeFragment.createNewInstance(mqttHelper), "home").commit();
+//        initialize drawer
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
+//        Initialize floating action button (for map fragment)
         fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.hide();
-        checkNewUser();
+
+        chatData = new ArrayList<>();
+        checkNewUser(); // start checking if this is a new user or not
 
 //        Set up locations update listener
-        onLocationsUpdateListener = new OnLocationsUpdateListener();
+        onDataUpdate = new OnDataUpdate();
     }
 
 
@@ -185,10 +193,16 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        Log.w("Received:", "Topic:" + topic + "Message:" + message.toString());
-        if (topic.equals(MQTTHelper.SHARED_LOCATION_SUB_TOPIC)) {
-            sharedLocations = SimpleLocation.parseMessageToSimpleLocation(message.toString());
-            onLocationsUpdateListener.listener.notifyLocationsChanges();
+
+        switch (topic) {
+            case MQTTHelper.SHARED_LOCATION_SUB_TOPIC:
+                sharedLocations = SimpleLocation.parseMessageToSimpleLocation(message.toString());
+                onDataUpdate.listener.notifyDataChanged(MQTTHelper.SHARED_LOCATION_SUB_TOPIC);
+            case MQTTHelper.CHAT_SUB_TOPIC:
+                chatData.add(ChatModel.parseMessageToChatModel(message));
+                onDataUpdate.listener.notifyDataChanged(MQTTHelper.CHAT_SUB_TOPIC);
+            default:
+                Log.w("Received:", "Topic:" + topic + "Message:" + message.toString());
         }
     }
 

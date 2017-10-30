@@ -20,7 +20,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.nnkti.friendlocator.Listener.OnLocationsUpdateListener;
+import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.activities.MainActivity;
 import com.nnkti.friendlocator.helpers.FloatingActionButtonHelper;
@@ -34,17 +34,17 @@ import java.util.ArrayList;
  * Created by nnkti on 10/20/2017.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnLocationsUpdateListener.Listener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, FloatingActionButtonHelper.FabClickCallBack, OnDataUpdate.Listener {
     MQTTHelper mqttHelper;
     MapView map;
     GoogleMap currentMap;
     Location lastKnownLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     FloatingActionButtonHelper floatingActionButtonHelper;
-    OnLocationsUpdateListener onLocationsUpdateListener;
+    OnDataUpdate onDataUpdate;
     private ArrayList<SimpleLocation> sharedLocations;
     private ArrayList<Marker> markers;
-    Marker thisUser;
+    private Marker myMarker;
     public static String LAST_LONGITUDE = "LAST_LONGITUDE";
     public static String LAST_LATITUDE = "LAST_LATITUDE";
 
@@ -82,10 +82,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                                 if ((lastKnownLocationLatLng.latitude == lastKnownLocationLatLng.longitude) && (lastKnownLocationLatLng.latitude == 0)) {
                                     Toast.makeText(getContext(), "Can't retrieve last known location", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
-                                            .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID)));
+                                    myMarker = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
+                                            .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID) + " - Last known"));
                                     currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                            lastKnownLocationLatLng,
+                                            myMarker.getPosition(),
                                             getAverageZoomLevel()
                                     ));
                                 }
@@ -97,21 +97,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
 
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LATITUDE, lastKnownLocationLatLng.latitude);
                                 SharedPreferencesHelper.writeDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, lastKnownLocationLatLng.longitude);
-                                thisUser = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
+                                myMarker = currentMap.addMarker(new MarkerOptions().position(lastKnownLocationLatLng)
                                         .title(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID) + " - ME"));
                                 currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        lastKnownLocationLatLng,
+                                        myMarker.getPosition(),
                                         getAverageZoomLevel()
                                 ));
                             }
                         } else {
                             Log.d("Location", "Current location is null. Using defaults.");
                             Log.e("Location", "Exception: %s", task.getException());
-//                            LatLng sydney = new LatLng(-33.852, 151.211);
-//                            currentMap.addMarker(new MarkerOptions().position(sydney)
-//                                    .title("Marker in Sydney"));
-//                            currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, currentMap.getMaxZoomLevel()));
-//                            currentMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
                     }
                 });
@@ -126,6 +121,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
             for (SimpleLocation curr : sharedLocations
                     ) {
                 if (!curr.getNickname().equals(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID))) {
+//                    This is for other client case
                     int pos = getMarkerBySimpleLocation(curr);
                     if (pos == -1) { // case: new user
 
@@ -134,10 +130,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
                         a.title(curr.getNickname()); //Set nickname for marker
                         Marker m = currentMap.addMarker(a);
                         markers.add(m);
-                        Toast.makeText(getContext(),"Moving camera to a new user location", Toast.LENGTH_SHORT).show();
-                        currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(),getAverageZoomLevel()));
+                        Toast.makeText(getContext(), "Moving camera to a new user location", Toast.LENGTH_SHORT).show();
+                        currentMap.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), getAverageZoomLevel()));
                     } else {
-                        markers.get(pos).setPosition(new LatLng(curr.getLatitude(),curr.getLongitude()));
+                        markers.get(pos).setPosition(new LatLng(curr.getLatitude(), curr.getLongitude()));
+                    }
+                } else {
+//                    This is for current user case
+                    LatLng currentOne = new LatLng(SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LATITUDE, 0),
+                            SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, 0)
+                    );
+                    if ((currentOne.latitude == currentOne.longitude) && (currentOne.latitude == 0)) {
+                        Toast.makeText(getContext(), "Can't retrieve this user last known location", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (myMarker != null)
+                            myMarker.setPosition(currentOne);
                     }
                 }
             }
@@ -157,8 +164,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        // Add a marker in Sydney, Australia,
-        // and move the map's camera to the same location.
         currentMap = googleMap;
         getLocationsFromMainActivity();
         getDeviceLocation();
@@ -184,8 +189,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
 //        Get Fab helper for Floating action button manipulations
         floatingActionButtonHelper = new FloatingActionButtonHelper(((MainActivity) getActivity()).fab);
         floatingActionButtonHelper.setFabOnClickListener(this);
-        onLocationsUpdateListener = ((MainActivity)getActivity()).onLocationsUpdateListener;
-        onLocationsUpdateListener.setListener(this);
+        onDataUpdate = ((MainActivity) getActivity()).onDataUpdate;
+        onDataUpdate.setListener(this);
         return v;
     }
 
@@ -227,9 +232,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
     }
 
     @Override
-    public void notifyLocationsChanges() {
-        getLocationsFromMainActivity();
-        updateMarkersOfSharedLocations();
+    public void notifyDataChanged(String type) {
+        if (type.equals(MQTTHelper.SHARED_LOCATION_SUB_TOPIC)) {
+            getLocationsFromMainActivity();
+            updateMarkersOfSharedLocations();
+        }
     }
 
     private void getLocationsFromMainActivity() {

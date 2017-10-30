@@ -18,6 +18,7 @@ import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
 import com.nnkti.friendlocator.activities.MainActivity;
 import com.nnkti.friendlocator.adapter.ChatRecyclerViewAdapter;
@@ -35,7 +36,7 @@ import java.util.ArrayList;
  * Created by nnkti on 10/20/2017.
  */
 
-public class ChatRoomFragment extends Fragment implements View.OnClickListener, MqttCallbackExtended {
+public class ChatRoomFragment extends Fragment implements View.OnClickListener, OnDataUpdate.Listener {
     View view;
     RecyclerView rvChatData;
     ChatRecyclerViewAdapter chatRecyclerViewAdapter;
@@ -44,6 +45,7 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
     ImageButton btnSend;
     MQTTHelper mqttHelper;
     ArrayList<ChatModel> chatData;
+    OnDataUpdate onDataUpdate;
 
     public static ChatRoomFragment createNewInstance(MQTTHelper mqttHelper) {
         ChatRoomFragment chatRoomFragment = new ChatRoomFragment();
@@ -56,16 +58,16 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
         super.onViewCreated(view, savedInstanceState);
         getActivity().getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        mqttHelper.setCallback(this);
+//        mqttHelper.setCallback(this);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_chat_room, container, false);
-//        scrollView = (ScrollView) view.findViewById(R.id.scroll_view_data_received);
-//        tvReceivedMessages = (TextView) view.findViewById(R.id.tv_data_received);
-        chatData = new ArrayList<>();
+        onDataUpdate = ((MainActivity)getActivity()).onDataUpdate;
+        onDataUpdate.setListener(this);
+        chatData = ((MainActivity)getActivity()).chatData;
 
         rvChatData = (RecyclerView) view.findViewById(R.id.rv_chat_data);
         layoutManager = new LinearLayoutManager(this.getContext());
@@ -93,26 +95,11 @@ public class ChatRoomFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
-    public void connectComplete(boolean reconnect, String serverURI) {
-
-    }
-
-    @Override
-    public void connectionLost(Throwable cause) {
-
-    }
-
-    @Override
-    public void messageArrived(String topic, MqttMessage message) throws Exception {
-        if (topic.equals(MQTTHelper.CHAT_SUB_TOPIC)) {
-            chatData.add(ChatModel.parseMessageToChatModel(message));
+    public void notifyDataChanged(String type) {
+        if (type.equals(MQTTHelper.CHAT_SUB_TOPIC)) {
+            chatData = ((MainActivity)getActivity()).chatData;
             chatRecyclerViewAdapter.notifyDataSetChanged();
             layoutManager.smoothScrollToPosition(rvChatData, null, chatData.size() - 1);
         }
-    }
-
-    @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {
-
     }
 }
