@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -58,7 +59,7 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
                         lastKnownLocation.getLongitude(),
                         SharedPreferencesHelper.readStringSharedPreferences(param.getFragmentActivity(), MQTTHelper.CLIENT_ID)
                 );
-                param.getMqttHelper().sendLocationToServer(result);
+//                param.getMqttHelper().sendLocationToServer(result);
             }
         } else {
             Log.d("Location", "Current location is null.");

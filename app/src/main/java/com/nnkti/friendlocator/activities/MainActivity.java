@@ -1,5 +1,6 @@
 package com.nnkti.friendlocator.activities;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,8 +21,10 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.nnkti.friendlocator.BroadcastService;
 import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
+import com.nnkti.friendlocator.asynctask.MyAsyncTask;
 import com.nnkti.friendlocator.asynctask.SendLocationAsyncTask;
 import com.nnkti.friendlocator.fragments.ChatRoomFragment;
 import com.nnkti.friendlocator.fragments.HomeFragment;
@@ -204,6 +207,8 @@ public class MainActivity extends AppCompatActivity
             AsyncTaskParams params = new AsyncTaskParams(fusedLocationProviderClient, this, mqttHelper);
             SendLocationAsyncTask sendLocationAsyncTask = new SendLocationAsyncTask();
             sendLocationAsyncTask.execute(params);
+
+            startService(new Intent(this, BroadcastService.class));
         }
     }
 
