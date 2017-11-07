@@ -14,7 +14,7 @@ public class MqttHelper {
 
     private static final String serverUri = "tcp://m10.cloudmqtt.com:11778";
 
-    private static final String CLIENT_ID = "SERVER";
+    private static final String CLIENT_ID = "SERVER_dummy";
     public static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
     private static final String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
 

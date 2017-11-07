@@ -59,7 +59,7 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
                         lastKnownLocation.getLongitude(),
                         SharedPreferencesHelper.readStringSharedPreferences(param.getFragmentActivity(), MQTTHelper.CLIENT_ID)
                 );
-//                param.getMqttHelper().sendLocationToServer(result);
+                param.getMqttHelper().sendLocationToServer(result);
             }
         } else {
             Log.d("Location", "Current location is null.");

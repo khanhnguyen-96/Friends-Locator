@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Location Broadcast.iml" filepath="$PROJECT_DIR$/Location Broadcast.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LocationBroadcast.iml" filepath="$PROJECT_DIR$/LocationBroadcast.iml" />
     </modules>
   </component>
 </project>

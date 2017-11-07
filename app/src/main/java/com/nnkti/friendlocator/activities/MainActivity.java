@@ -24,7 +24,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.nnkti.friendlocator.BroadcastService;
 import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
-import com.nnkti.friendlocator.asynctask.MyAsyncTask;
 import com.nnkti.friendlocator.asynctask.SendLocationAsyncTask;
 import com.nnkti.friendlocator.fragments.ChatRoomFragment;
 import com.nnkti.friendlocator.fragments.HomeFragment;

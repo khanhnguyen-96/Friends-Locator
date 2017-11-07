@@ -62,7 +62,7 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
 
     @Override
     public int getItemCount() {
-        return locations.size();
+        return (locations != null) ? (locations.size()) : 0;
     }
 
     class UserRecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
