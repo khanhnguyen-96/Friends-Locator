@@ -10,10 +10,19 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.nnkti.friendlocator.activities.MainActivity;
+import com.nnkti.friendlocator.fragments.HomeFragment;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
 import com.nnkti.friendlocator.models.AsyncTaskParams;
 import com.nnkti.friendlocator.models.SimpleLocation;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import static com.nnkti.friendlocator.fragments.MapFragment.LAST_LATITUDE;
 import static com.nnkti.friendlocator.fragments.MapFragment.LAST_LONGITUDE;
@@ -25,6 +34,7 @@ import static com.nnkti.friendlocator.fragments.MapFragment.LAST_LONGITUDE;
 public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, Void> implements OnCompleteListener {
     private AsyncTaskParams param;
     private SimpleLocation result;
+    private static final String FRIENDSLOCATION = "FRIENDSLOCATION";
 
     @Override
     protected Void doInBackground(final AsyncTaskParams... params) {
@@ -32,7 +42,7 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
         while (true) {
             try {
                 Thread.sleep(10000);
-            } catch(InterruptedException ex) {
+            } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
             try {
@@ -42,6 +52,28 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
                 Log.e("Exception: %s", e.getMessage());
             }
         }
+    }
+
+    private void sendLocationRequestToServer() {
+        String ipAnalyzer = SharedPreferencesHelper.readStringSharedPreferences(param.getFragmentActivity(), HomeFragment.IP_ANALYZER);
+        if (!ipAnalyzer.isEmpty())
+            try {
+                Socket theSocket = new Socket(
+                        ipAnalyzer,
+                        6789);
+                PrintWriter out = new PrintWriter(theSocket.getOutputStream(), true);
+                BufferedReader fromServer =
+                        new BufferedReader(new InputStreamReader(theSocket.getInputStream()));
+                out.println(FRIENDSLOCATION);
+
+                String locations = fromServer.readLine();
+                param.getOnDataUpdate().locationListener.notifyNewLocationsArrived(locations);
+                theSocket.close();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
     }
 
     @Override
@@ -59,7 +91,8 @@ public class SendLocationAsyncTask extends AsyncTask<AsyncTaskParams, Integer, V
                         lastKnownLocation.getLongitude(),
                         SharedPreferencesHelper.readStringSharedPreferences(param.getFragmentActivity(), MQTTHelper.CLIENT_ID)
                 );
-                param.getMqttHelper().sendLocationToServer(result);
+//                param.getMqttHelper().sendLocationToServer(result);
+                sendLocationRequestToServer();
             }
         } else {
             Log.d("Location", "Current location is null.");
