@@ -17,4 +17,5 @@
     <string name="home">Home</string>
     <string name="browse_users">Browse users</string>
     <string name="user_list">User List</string>
+    <string name="ip_analyzer">Analyzer IP:</string>
 </resources>

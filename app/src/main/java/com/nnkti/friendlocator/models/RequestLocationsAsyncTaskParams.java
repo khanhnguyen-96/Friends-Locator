@@ -10,11 +10,17 @@ import com.nnkti.friendlocator.helpers.MQTTHelper;
  * Created by nnkti on 10/24/2017.
  */
 
-public class AsyncTaskParams {
+public class RequestLocationsAsyncTaskParams {
     private OnDataUpdate onDataUpdate;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private FragmentActivity fragmentActivity;
-    private MQTTHelper mqttHelper;
+    private String ipAnalyzer;
+
+    public String getIpAnalyzer() {
+        return ipAnalyzer;
+    }
+
+    public void setIpAnalyzer(String ipAnalyzer) {
+        this.ipAnalyzer = ipAnalyzer;
+    }
 
     public OnDataUpdate getOnDataUpdate() {
         return onDataUpdate;
@@ -24,34 +30,8 @@ public class AsyncTaskParams {
         this.onDataUpdate = onDataUpdate;
     }
 
-    public MQTTHelper getMqttHelper() {
-        return mqttHelper;
-    }
-
-    public void setMqttHelper(MQTTHelper mqttHelper) {
-        this.mqttHelper = mqttHelper;
-    }
-
-    public FusedLocationProviderClient getFusedLocationProviderClient() {
-        return fusedLocationProviderClient;
-    }
-
-    public FragmentActivity getFragmentActivity() {
-        return fragmentActivity;
-    }
-
-    public void setFusedLocationProviderClient(FusedLocationProviderClient fusedLocationProviderClient) {
-        this.fusedLocationProviderClient = fusedLocationProviderClient;
-    }
-
-    public void setFragmentActivity(FragmentActivity fragmentActivity) {
-        this.fragmentActivity = fragmentActivity;
-    }
-
-    public AsyncTaskParams(OnDataUpdate onDataUpdate, FusedLocationProviderClient fusedLocationProviderClient, FragmentActivity fragmentActivity, MQTTHelper mqttHelper) {
+    public RequestLocationsAsyncTaskParams(OnDataUpdate onDataUpdate, String ipAnalyzer) {
         this.onDataUpdate = onDataUpdate;
-        this.fusedLocationProviderClient = fusedLocationProviderClient;
-        this.fragmentActivity = fragmentActivity;
-        this.mqttHelper = mqttHelper;
+        this.ipAnalyzer = ipAnalyzer;
     }
 }

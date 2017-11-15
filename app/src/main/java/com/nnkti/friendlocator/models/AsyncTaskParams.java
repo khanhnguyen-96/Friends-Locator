@@ -3,6 +3,7 @@ package com.nnkti.friendlocator.models;
 import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 
 /**
@@ -10,9 +11,18 @@ import com.nnkti.friendlocator.helpers.MQTTHelper;
  */
 
 public class AsyncTaskParams {
+    private OnDataUpdate onDataUpdate;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private FragmentActivity fragmentActivity;
     private MQTTHelper mqttHelper;
+
+    public OnDataUpdate getOnDataUpdate() {
+        return onDataUpdate;
+    }
+
+    public void setOnDataUpdate(OnDataUpdate onDataUpdate) {
+        this.onDataUpdate = onDataUpdate;
+    }
 
     public MQTTHelper getMqttHelper() {
         return mqttHelper;
@@ -38,7 +48,8 @@ public class AsyncTaskParams {
         this.fragmentActivity = fragmentActivity;
     }
 
-    public AsyncTaskParams(FusedLocationProviderClient fusedLocationProviderClient, FragmentActivity fragmentActivity, MQTTHelper mqttHelper) {
+    public AsyncTaskParams(OnDataUpdate onDataUpdate, FusedLocationProviderClient fusedLocationProviderClient, FragmentActivity fragmentActivity, MQTTHelper mqttHelper) {
+        this.onDataUpdate = onDataUpdate;
         this.fusedLocationProviderClient = fusedLocationProviderClient;
         this.fragmentActivity = fragmentActivity;
         this.mqttHelper = mqttHelper;

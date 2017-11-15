@@ -15,6 +15,11 @@ public class SharedPreferencesHelper {
 //        activityContext.getPreferences(Context.MODE_PRIVATE).edit().putString(key, value).apply();
     }
 
+    public static String readStringSharedPreferencesMain(Context context, String key) {
+        return context.getSharedPreferences("MySP", Context.MODE_PRIVATE).getString(key, "");
+//        return activityContext.getPreferences(Context.MODE_PRIVATE).getString(key, "");
+    }
+
     public static String readStringSharedPreferences(FragmentActivity activityContext, String key) {
         return activityContext.getSharedPreferences("MySP", Context.MODE_PRIVATE).getString(key, "");
 //        return activityContext.getPreferences(Context.MODE_PRIVATE).getString(key, "");

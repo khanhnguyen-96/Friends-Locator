@@ -26,7 +26,7 @@ public class MQTTHelper {
 
     public static final String CLIENT_ID = "CLIENT_ID";
     public static final String CHAT_SUB_TOPIC = "chatroom/chat";
-    private static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
+    public static final String LOCATION_SUB_TOPIC = "chatroom/SentLocation";
     public static final String SHARED_LOCATION_SUB_TOPIC = "chatroom/SharedLocation";
 
     private static final String username = "phusiriw";

@@ -1,5 +1,6 @@
 package com.nnkti.friendlocator.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -24,13 +24,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.nnkti.friendlocator.BroadcastService;
 import com.nnkti.friendlocator.Listener.OnDataUpdate;
 import com.nnkti.friendlocator.R;
-import com.nnkti.friendlocator.asynctask.SendLocationAsyncTask;
+import com.nnkti.friendlocator.asynctask.GetDataFromAnalyticApp;
 import com.nnkti.friendlocator.fragments.ChatRoomFragment;
 import com.nnkti.friendlocator.fragments.HomeFragment;
 import com.nnkti.friendlocator.fragments.MapFragment;
 import com.nnkti.friendlocator.helpers.MQTTHelper;
 import com.nnkti.friendlocator.helpers.SharedPreferencesHelper;
-import com.nnkti.friendlocator.models.AsyncTaskParams;
 import com.nnkti.friendlocator.models.ChatModel;
 import com.nnkti.friendlocator.models.SimpleLocation;
 
@@ -41,7 +40,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, MqttCallbackExtended {
+        implements NavigationView.OnNavigationItemSelectedListener, MqttCallbackExtended, OnDataUpdate.LocationListener {
     MQTTHelper mqttHelper;
     public FloatingActionButton fab;
     Toolbar toolbar;
@@ -85,6 +84,7 @@ public class MainActivity extends AppCompatActivity
 
 //        Set up locations update listener
         onDataUpdate = new OnDataUpdate();
+        onDataUpdate.setLocationListener(this);
     }
 
     @Override
@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -167,6 +166,18 @@ public class MainActivity extends AppCompatActivity
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.container, ChatRoomFragment.createNewInstance(mqttHelper), "chat_room").commit();
                 } else if (id == R.id.nav_map) {
+                    String ip = SharedPreferencesHelper.readStringSharedPreferencesMain(getApplicationContext(), HomeFragment.IP_ANALYZER);
+                    @SuppressLint("StaticFieldLeak") GetDataFromAnalyticApp getDataFromAnalyticApp = new GetDataFromAnalyticApp() {
+                        @Override
+                        protected void onPostExecute(String result) {
+//                            super.onPostExecute(result);
+                            Log.e("OUTPUT", result );
+                            sharedLocations = SimpleLocation.parseMessageToSimpleLocation(result);
+                            onDataUpdate.listener.notifyDataChanged(MQTTHelper.SHARED_LOCATION_SUB_TOPIC);
+                        }
+                    };
+                    Log.e("OUTPUT", "azazaza");
+                    getDataFromAnalyticApp.execute(ip);
                     toolbar.setTitle("Friends Locator");
                     fab.show();
                     getSupportFragmentManager().beginTransaction()
@@ -203,9 +214,9 @@ public class MainActivity extends AppCompatActivity
 
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
         if (mLocationPermissionGranted) {
-            AsyncTaskParams params = new AsyncTaskParams(fusedLocationProviderClient, this, mqttHelper);
-            SendLocationAsyncTask sendLocationAsyncTask = new SendLocationAsyncTask();
-            sendLocationAsyncTask.execute(params);
+//            AsyncTaskParams params = new AsyncTaskParams(onDataUpdate, fusedLocationProviderClient, this, mqttHelper);
+//            SendLocationAsyncTask sendLocationAsyncTask = new SendLocationAsyncTask();
+//            sendLocationAsyncTask.execute(params);
 
             startService(new Intent(this, BroadcastService.class));
         }
@@ -260,5 +271,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+    }
+
+    @Override
+    public void notifyNewLocationsArrived(String data) {
+        sharedLocations = SimpleLocation.parseMessageToSimpleLocation(data);
+        onDataUpdate.listener.notifyDataChanged(MQTTHelper.SHARED_LOCATION_SUB_TOPIC);
     }
 }

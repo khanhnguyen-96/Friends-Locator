@@ -117,39 +117,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Floatin
     }
 
     private void updateMarkersOfSharedLocations() {
-        if (!sharedLocations.isEmpty()) {
-            for (SimpleLocation curr : sharedLocations
-                    ) {
-                if (!curr.getNickname().equals(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID))) {
+        if (sharedLocations != null)
+            if (!sharedLocations.isEmpty()) {
+                for (SimpleLocation curr : sharedLocations
+                        ) {
+                    if (!curr.getNickname().equals(SharedPreferencesHelper.readStringSharedPreferences(getActivity(), MQTTHelper.CLIENT_ID))) {
 //                    This is for other client case
-                    int pos = getMarkerBySimpleLocation(curr);
-                    if (pos == -1) { // case: new user
+                        int pos = getMarkerBySimpleLocation(curr);
+                        if (pos == -1) { // case: new user
 
-                        LatLng currentOne = new LatLng(curr.getLatitude(), curr.getLongitude());
-                        MarkerOptions a = new MarkerOptions().position(currentOne);
-                        a.title(curr.getNickname()); //Set nickname for marker
-                        Marker m = currentMap.addMarker(a);
-                        markers.add(m);
-                        Toast.makeText(getContext(), "Moving camera to a new user location", Toast.LENGTH_SHORT).show();
-                        currentMap.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), getAverageZoomLevel()));
+                            LatLng currentOne = new LatLng(curr.getLatitude(), curr.getLongitude());
+                            MarkerOptions a = new MarkerOptions().position(currentOne);
+                            a.title(curr.getNickname()); //Set nickname for marker
+                            Marker m = currentMap.addMarker(a);
+                            markers.add(m);
+                        } else {
+                            markers.get(pos).setPosition(new LatLng(curr.getLatitude(), curr.getLongitude()));
+                        }
                     } else {
-                        markers.get(pos).setPosition(new LatLng(curr.getLatitude(), curr.getLongitude()));
-                    }
-                } else {
 //                    This is for current user case
-                    LatLng currentOne = new LatLng(SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LATITUDE, 0),
-                            SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, 0)
-                    );
-                    if ((currentOne.latitude == currentOne.longitude) && (currentOne.latitude == 0)) {
-                        Toast.makeText(getContext(), "Can't retrieve this user last known location", Toast.LENGTH_SHORT).show();
-                    } else {
-                        if (myMarker != null)
-                            myMarker.setPosition(currentOne);
+                        LatLng currentOne = new LatLng(SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LATITUDE, 0),
+                                SharedPreferencesHelper.readDoubleSharedPreferences(getActivity(), LAST_LONGITUDE, 0)
+                        );
+                        if ((currentOne.latitude == currentOne.longitude) && (currentOne.latitude == 0)) {
+                            Toast.makeText(getContext(), "Can't retrieve this user last known location", Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (myMarker != null)
+                                myMarker.setPosition(currentOne);
+                        }
                     }
                 }
-            }
 
-        }
+            }
     }
 
     private void moveCameraTo(SimpleLocation simpleLocation) {

@@ -39,11 +39,6 @@ public class BroadcastService extends Service {
             socket.setBroadcast(true);
         }
 
-        //socket.setSoTimeout(1000);
-//        DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-//        Log.e("UDP", "Waiting for UDP broadcast");
-//        socket.receive(packet);
-
         while (true) {
             TimeUnit.SECONDS.sleep(10);
             StringBuilder sb = new StringBuilder("COORDINATE ");
